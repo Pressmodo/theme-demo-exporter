@@ -1,27 +1,17 @@
-# WP CLI Blurify
+# Pressmodo theme demo exporter
 
-WP CLI command to blur all images under the `wp-content/uploads` folder. Useful when creating demo content for WordPress themes and can't export "real" images due to copyright.
-
-Before blurring all images, a copy of the `uploads` folder is made under `wp-content`.
+WP CLI command that creates a .zip file containing a database dump together with a copy of the uploads folder.
 
 ## Install
 
-WP CLI Blurify requires Composer and WP-CLI to function.
+Requires Composer and WP-CLI to function.
 
 ```
-wp package install pressmodo/wp-cli-blurify
+wp package install pressmodo/theme-demo-exporter
 ```
 
 ## Commands
 
-#### Blur all images
-
 ```
-wp blurify blur
-```
-
-#### Blur all images & disable backup
-
-```
-wp blurify blue --backup=false
+wp demo-export export
 ```
