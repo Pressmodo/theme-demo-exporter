@@ -68,6 +68,15 @@ class DemoExportCommand {
 
 		WP_CLI::log( 'Added uploads folder to zip file.' );
 
+		$configMetadata = [
+			'theme'          => get_option( 'stylesheet' ),
+			'active_plugins' => get_option( 'active_plugins', [] ),
+		];
+
+		$zipFile->addFromString( 'config.json', wp_json_encode( $configMetadata ) );
+
+		WP_CLI::log( 'Added theme requirements and metadata configuration.' );
+
 		$zipFile->saveAsFile( 'demo.zip' );
 		$zipFile->close();
 
