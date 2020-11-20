@@ -71,6 +71,7 @@ class DemoExportCommand {
 		$configMetadata = [
 			'theme'          => get_option( 'stylesheet' ),
 			'active_plugins' => get_option( 'active_plugins', [] ),
+			'plugins'        => get_plugins(),
 		];
 
 		$zipFile->addFromString( 'config.json', wp_json_encode( $configMetadata ) );
