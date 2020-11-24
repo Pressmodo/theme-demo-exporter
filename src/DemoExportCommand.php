@@ -37,7 +37,7 @@ class DemoExportCommand {
 	public function __invoke() {
 
 		$menu = ( $builder = new CliMenuBuilder() )
-			->setTitle( 'Pressmodo Theme Exporter' )
+			->setTitle( 'Pressmodo Theme Demo Exporter' )
 			->addItem( 'Export database', $this->exportDatabase() )
 			->addItem( 'Restore database', $this->restoreDatabase() )
 			->addItem( 'Export uploads folder', $this->exportUploads() )
