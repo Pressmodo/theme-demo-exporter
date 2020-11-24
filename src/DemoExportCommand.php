@@ -39,7 +39,7 @@ class DemoExportCommand {
 		$menu = ( $builder = new CliMenuBuilder() )
 			->setTitle( 'Pressmodo Theme Exporter' )
 			->addItem( 'Export database', $this->exportDatabase() )
-			->addItem( 'Restore database prefix after export', $this->restoreDatabase() )
+			->addItem( 'Restore database', $this->restoreDatabase() )
 			->addItem( 'Export uploads folder', $this->exportUploads() )
 			->addSubMenuFromBuilder( 'Setup configuration file', $this->setupConfigurationFile() )
 			->addItem( 'Create .zip file', $this->createPackage() )
