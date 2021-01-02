@@ -236,9 +236,17 @@ class DemoExportCommand {
 
 			$wpContentPath = trailingslashit( WP_CONTENT_DIR );
 
+			$filesystem = new Filesystem();
+
 			$zipFile = new ZipFile();
 
 			$zipFile->addFile( $wpContentPath . 'demo.sql' );
+
+			$zipFile->addDirRecursive( trailingslashit( WP_CONTENT_DIR ) . 'uploads_demo', 'uploads_demo' );
+
+			if ( $filesystem->exists( trailingslashit( WP_CONTENT_DIR ) . 'fonts' ) ) {
+				$zipFile->addDirRecursive( trailingslashit( WP_CONTENT_DIR ) . 'fonts', 'fonts' );
+			}
 
 			$zipFile->addDirRecursive( trailingslashit( WP_CONTENT_DIR ) . 'uploads_demo', 'uploads_demo' );
 
