@@ -29,6 +29,10 @@ class DemoExportCommand {
 
 	protected $requiredPlugins = [];
 
+	protected $initialHashedPassword;
+
+	protected $initialUsername;
+
 	/**
 	 * Start the command when invoked.
 	 *
@@ -38,11 +42,12 @@ class DemoExportCommand {
 
 		$menu = ( $builder = new CliMenuBuilder() )
 			->setTitle( 'Pressmodo Theme Demo Exporter' )
-			->addItem( 'Export database', $this->exportDatabase() )
-			->addItem( 'Restore database', $this->restoreDatabase() )
-			->addItem( 'Export uploads folder', $this->exportUploads() )
-			->addSubMenuFromBuilder( 'Setup configuration file', $this->setupConfigurationFile() )
-			->addItem( 'Create .zip file', $this->createPackage() )
+			->addItem( '1. Export database', $this->exportDatabase() )
+			->addItem( '2. Restore database', $this->restoreDatabase() )
+			->addItem( '3. Reset randomized admin account', $this->resetAdminAccount() )
+			->addItem( '4. Export uploads folder', $this->exportUploads() )
+			->addSubMenuFromBuilder( '5. Setup configuration file', $this->setupConfigurationFile() )
+			->addItem( '6. Create .zip file', $this->createPackage() )
 			->addLineBreak( '-' )
 			->setPadding( 2, 4 )
 			->setWidth( $builder->getTerminal()->getWidth() )
@@ -60,7 +65,20 @@ class DemoExportCommand {
 
 		return function ( CliMenu $menu ) {
 
+			global $wpdb;
+
 			$menu->close();
+
+			// Randomize admin user's name and password before export.
+			$adminUser = get_user_by( 'ID', 1 );
+			$this->initialHashedPassword = $adminUser->data->user_pass;
+			$this->initialUsername = $adminUser->data->user_login;
+
+			$wpdb->update( $wpdb->users, array( 'user_login' => 'pressmodo_demo_user' ), array( 'ID' => 1 ) );
+
+			wp_set_password( wp_generate_password(), 1 );
+
+			WP_CLI::line( 'Randomized admin user account.' );
 
 			try {
 				$prefix = ( new DatabasePrefixer( $this->demoDatabasePrefix ) )->init();
@@ -108,6 +126,39 @@ class DemoExportCommand {
 
 		};
 
+	}
+
+	/**
+	 * Reset admin account by specifing username and password
+	 *
+	 * @return \callable
+	 */
+	private function resetAdminAccount() {
+		return function ( CliMenu $menu ) {
+
+			$result = $menu->askText()
+				->setPromptText( 'Admin username' )
+				->ask();
+
+			$adminUserName = $result->fetch();
+
+			$result = $menu->askText()
+				->setPromptText( 'Admin password' )
+				->ask();
+
+			$adminUserPassword = $result->fetch();
+
+			$menu->close();
+
+			global $wpdb;
+
+			$wpdb->update( $wpdb->users, array( 'user_login' => $adminUserName ), array( 'ID' => 1 ) );
+
+			wp_set_password( $adminUserPassword, 1 );
+
+			\WP_CLI::success( 'Admin account successfully reset.' );
+
+		};
 	}
 
 	/**
