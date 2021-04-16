@@ -49,6 +49,8 @@ class DemoExportCommand {
 			->addSubMenuFromBuilder( '5. Setup configuration file', $this->setupConfigurationFile() )
 			->addItem( '6. Create .zip file', $this->createPackage() )
 			->addLineBreak( '-' )
+			->addItem( 'Sanitize SVG', $this->sanitizeSVG() )
+			->addLineBreak( '-' )
 			->setPadding( 2, 4 )
 			->setWidth( $builder->getTerminal()->getWidth() )
 			->build();
@@ -70,9 +72,9 @@ class DemoExportCommand {
 			$menu->close();
 
 			// Randomize admin user's name and password before export.
-			$adminUser = get_user_by( 'ID', 1 );
+			$adminUser                   = get_user_by( 'ID', 1 );
 			$this->initialHashedPassword = $adminUser->data->user_pass;
-			$this->initialUsername = $adminUser->data->user_login;
+			$this->initialUsername       = $adminUser->data->user_login;
 
 			$wpdb->update( $wpdb->users, array( 'user_login' => 'pressmodo_demo_user' ), array( 'ID' => 1 ) );
 
@@ -273,6 +275,66 @@ class DemoExportCommand {
 		$builder->addItem( 'Return to parent menu', new GoBackAction() );
 
 		return $builder;
+
+	}
+
+	/**
+	 * Restore the prefix to the original wp_ value.
+	 *
+	 * @return \callable
+	 */
+	private function sanitizeSVG() {
+
+		return function ( CliMenu $menu ) {
+
+			$menu->close();
+
+			$uploadsPath = wp_upload_dir();
+			$uploadsPath = $uploadsPath['basedir'];
+			$images      = $this->getSVGList( $uploadsPath );
+			$filesystem  = new Filesystem();
+
+			foreach ( $images as $image ) {
+				$path      = $image->getPathname();
+				$content   = file_get_contents( $path );
+				$sanitized = ( new SVGHandler() )->sanitizer( $content );
+				$filesystem->remove( $path );
+				$filesystem->dumpFile( $path, $sanitized );
+				\WP_CLI::line( sprintf( 'Sanitized file: %s', basename( $path ) ) );
+			}
+
+			\WP_CLI::success( 'SVG Successfully sanitized.' );
+
+		};
+
+	}
+
+	/**
+	 * Get list of all images into the uploads folder.
+	 *
+	 * @param string $path the uploads folder.
+	 * @return array
+	 */
+	private function getSVGList( $path ) {
+
+		$iterator = new \RecursiveIteratorIterator( new \RecursiveDirectoryIterator( $path ) );
+		$files    = [];
+
+		foreach ( $iterator as $file ) {
+
+			if ( $file->isDir() ) {
+				continue;
+			}
+
+			$path = $file->getPathname();
+			$type = wp_check_filetype( $path );
+
+			if ( isset( $type['ext'] ) && $type['ext'] === 'svg' ) {
+				$files[] = $file;
+			}
+		}
+
+		return $files;
 
 	}
 
