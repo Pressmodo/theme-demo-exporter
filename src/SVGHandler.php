@@ -21,6 +21,8 @@ class SVGHandler {
 	 */
 	private $svg_dom = null;
 
+	const SCRIPT_REGEX = '/(?:\w+script|data):/xi';
+
 	/**
 	 * is_allowed_tag
 	 *
